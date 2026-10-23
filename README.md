@@ -6,12 +6,14 @@
 
 Aggregate free tiers from dozens of providers, plus custom OpenAI-compatible chat, embedding, image, and audio endpoints, behind a single `/v1` API. Keys are stored encrypted. A router picks the best available model for each request, falls over to the next provider when one is rate-limited, and tracks per-key usage so you stay under every free-tier cap.
 
-[![CI](https://github.com/tashfeenahmed/freellmapi/actions/workflows/ci.yml/badge.svg)](https://github.com/tashfeenahmed/freellmapi/actions/workflows/ci.yml)
-[![GitHub stars](https://img.shields.io/github/stars/tashfeenahmed/freellmapi?style=flat&logo=github&color=yellow)](https://github.com/tashfeenahmed/freellmapi/stargazers)
+**Maintained by [Muhammad Azhan (@Azhan787)](https://github.com/Azhan787)** · forked from [tashfeenahmed/freellmapi](https://github.com/tashfeenahmed/freellmapi) (MIT)
+
+[![CI](https://github.com/Azhan787/freellmapi/actions/workflows/ci.yml/badge.svg)](https://github.com/Azhan787/freellmapi/actions/workflows/ci.yml)
+[![GitHub stars](https://img.shields.io/github/stars/Azhan787/freellmapi?style=flat&logo=github&color=yellow)](https://github.com/Azhan787/freellmapi/stargazers)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](./LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](#contributing)
-[![Docker image](https://img.shields.io/badge/ghcr.io-freellmapi-2496ED?logo=docker&logoColor=white)](https://github.com/tashfeenahmed/freellmapi/pkgs/container/freellmapi)
-[![Ask DeepWiki](https://img.shields.io/badge/DeepWiki-Ask-blue)](https://deepwiki.com/tashfeenahmed/freellmapi)
+[![Docker image](https://img.shields.io/badge/ghcr.io-freellmapi-2496ED?logo=docker&logoColor=white)](https://github.com/Azhan787/freellmapi/pkgs/container/freellmapi)
+[![Ask DeepWiki](https://img.shields.io/badge/DeepWiki-Ask-blue)](https://deepwiki.com/Azhan787/freellmapi)
 
 **[freellmapi.co](https://freellmapi.co/?utm_source=github&utm_medium=readme&utm_campaign=repository&utm_content=readme_top)** · browse the full catalog: 474 model families, 635 free endpoints
 
@@ -27,13 +29,23 @@ Aggregate free tiers from dozens of providers, plus custom OpenAI-compatible cha
 
 ![FreeLLMAPI dashboard — Models page with the monthly token budget](repo-assets/github-hero.png)
 
-
 Your router updates its own model catalog from a signed feed: new free models, quota changes, and compatibility fixes land without a `git pull`. Free installs get the monthly snapshot, so a model reaches them 30 days after it joins the live feed; premium routers get it the same day.
 **[Go live at freellmapi.co](https://freellmapi.co/?utm_source=github&utm_medium=readme&utm_campaign=premium&utm_content=readme_top#pricing)** ($19/yr, cancel anytime).
 
 </div>
 
 ---
+
+## At a glance
+
+| | |
+|---|---|
+| **What it is** | A local-first, single-user gateway that stacks many providers' free LLM tiers behind one OpenAI-compatible `/v1` endpoint |
+| **Routing** | Per-request router with automatic fallover on 429/5xx, cooldowns and key rotation |
+| **API surfaces** | OpenAI chat, responses, completions, embeddings, images, video, audio; Anthropic Messages; Gemini; optional Ollama emulation; MCP |
+| **Security** | Provider keys encrypted at rest (AES-256-GCM); one unified bearer token for your apps; binds to `127.0.0.1` by default |
+| **Stack** | Node.js 20+ (npm workspaces: `server`, `client`, `shared`, `cli`), Express, SQLite, React + Vite, Electron desktop app |
+| **License** | MIT |
 
 ## Contents
 
@@ -43,6 +55,7 @@ Your router updates its own model catalog from a signed feed: new free models, q
 - [How it compares](#how-it-compares)
 - [Features](#features)
 - [Quick start](#quick-start)
+- [Run from source or build your own Docker image](#run-from-source-or-build-your-own-docker-image)
 - [Desktop app](#desktop-app)
 - [Works with OpenAI-compatible clients](#works-with-openai-compatible-clients)
 - [Languages](#languages)
@@ -50,10 +63,14 @@ Your router updates its own model catalog from a signed feed: new free models, q
 - [Using the API](#using-the-api)
 - [Screenshots](#screenshots)
 - [How it works](#how-it-works)
+- [Repository map](#repository-map)
+- [Security notes](#security-notes)
 - [FAQ](#faq)
 - [Limitations](#limitations)
 - [Contributing](#contributing)
 - [Disclaimer](#disclaimer)
+- [Fork notice, credits & license](#fork-notice-credits--license)
+- [Maintainer](#maintainer)
 
 **Guides:** [Install & deploy](docs/en/install/01-install.md) · [API reference](docs/en/api/01-rest-api.md) · [Clients & coding agents](docs/en/clients/01-agent-clients.md) · [Prompt compression](docs/en/compression/01-compression-pipeline.md) · [Architecture & internals](docs/en/architecture/00-high-level-index.md) · [Documentation index](docs/en/README.md) · [Contributor guide](CONTRIBUTING.md)
 
@@ -176,6 +193,34 @@ Open http://localhost:3001, add your provider keys on the **Keys** page, reorder
 On Windows, the easiest path is the desktop **[`.exe` installer from Releases](https://github.com/tashfeenahmed/freellmapi/releases/latest)** (below). On Android, see the experimental [Termux guide](docs/en/install/02-android-termux.md).
 
 Everything else — Docker Compose, local development, declarative startup config, production builds, LAN access, and backups — is in **[docs/en/install/01-install.md](docs/en/install/01-install.md)**.
+
+## Run from source or build your own Docker image
+
+The one-liner above installs the published upstream image. To work on this fork's code instead:
+
+```bash
+git clone https://github.com/Azhan787/freellmapi.git
+cd freellmapi
+npm install
+npm run dev            # server on :3001, dashboard on :5173, both with hot reload
+npm run db:migration:up
+npm test
+```
+
+To run the stack from this repository with Docker Compose (builds the image from your checkout):
+
+```bash
+cp .env.example .env   # then set ENCRYPTION_KEY, see below
+docker compose up -d --build
+```
+
+Generate an encryption key with:
+
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
+
+The container listens on `127.0.0.1:3001` unless you set `HOST_BIND`. The `watchtower` self-update service is opt-in (`--profile autoupdate`).
 
 ## Desktop app
 
@@ -313,6 +358,24 @@ Request volume, success rate, tokens in and out, average latency, and per-provid
 ![One request in, the best free model out — the fallback chain with live scores, cooldowns, and quota tracking](repo-assets/router-flow.png)
 
 One request in, the best free model out: the router picks the highest-priority model with a healthy key that's under all its rate limits, decrypts the key in memory, and calls the provider — on a 429/5xx it cools that key down and retries the next model in your chain. The component walkthrough, routing internals, and operational details live in **[docs/en/architecture/00-high-level-index.md](docs/en/architecture/00-high-level-index.md)**.
+
+## Repository map
+
+| Path | Purpose |
+|---|---|
+| `server/` | Express proxy on `:3001`: router, quota tracking, providers, database |
+| `client/` | React + Vite dashboard |
+| `shared/` | Shared types, including the `Platform` union |
+| `cli/` | `freellmapi` command-line tools |
+| `desktop/` | Electron desktop shell |
+| `docs/en/` | Install, API, architecture and provider guides |
+| `GLOSSARY.md` | Shared vocabulary: platform, provider adapter, model row, key, chain, pool |
+
+## Security notes
+
+- FreeLLMAPI is a single-user, trusted-network tool. Keep the default `127.0.0.1` binding; only set `HOST_BIND=0.0.0.0` on a network you trust, and put a TLS reverse proxy with auth in front if it must be reachable more widely.
+- Protect `.env` and `ENCRYPTION_KEY`. They decrypt every stored provider key, and losing the key means losing those keys.
+- Report vulnerabilities privately, see [SECURITY.md](SECURITY.md).
 
 ## FAQ
 
@@ -498,8 +561,17 @@ Contributors very welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for the dev lo
 
 How each provider's ToS views a personal, single-user proxy — reviewed provider by provider in May 2026 — is in [docs/en/architecture/00-high-level-index.md#terms-of-service-review](docs/en/architecture/00-high-level-index.md#terms-of-service-review).
 
-## License
+## Fork notice, credits & license
+
+This repository is a fork of **[tashfeenahmed/freellmapi](https://github.com/tashfeenahmed/freellmapi)** by Tashfeen Ahmed, released under the MIT License. The original copyright notice is kept in [LICENSE](./LICENSE) as the license requires, with the fork maintainer's line added below it. The model catalog service, install script, Premium licensing, desktop installers and the published Docker image are run by the upstream project (`freellmapi.co`, GitHub Releases, `ghcr.io/tashfeenahmed/freellmapi`) and are used here as-is. Thanks to the upstream author and every contributor listed above.
 
 [MIT](./LICENSE)
-# FreeLLMAPI
-# FreeLLMAPI
+
+## Maintainer
+
+**Muhammad Azhan**, Web Developer | Full Stack Developer
+
+- GitHub: [Azhan787](https://github.com/Azhan787)
+- LinkedIn: [muhammad-azhan-54724537a](https://www.linkedin.com/in/muhammad-azhan-54724537a)
+- Portfolio: [muhammadazhan.dpdns.org](https://muhammadazhan.dpdns.org)
+- Email: [itxazhan32@gmail.com](mailto:itxazhan32@gmail.com)
