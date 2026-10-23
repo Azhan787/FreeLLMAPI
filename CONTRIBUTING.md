@@ -100,7 +100,7 @@ That means:
 
 PRs that are clearly unreviewed model output (broad unexplained diffs, fabricated limits, tests that do not run) will be asked for changes or closed.
 
-## Reporting issues
+## Reporting issues  
 
 Bug reports are most useful with: your version (or commit), the provider involved, and the exact request and response where you can share them. For verification or routing bugs, the server logs around the failing request help a lot.
 
